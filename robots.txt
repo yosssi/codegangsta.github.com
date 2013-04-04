@@ -1,4 +1,4 @@
 User-agent: *
 Disallow: 
 
-Sitemap: http://jeremysaenz.github.com/sitemap.xml 
+Sitemap: http://codegangsta.io/sitemap.xml 

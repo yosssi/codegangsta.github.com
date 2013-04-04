@@ -1,21 +1,23 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <urlset xmlns='http://www.sitemaps.org/schemas/sitemap/0.9'>
     <url>
-        <loc>
-            http://jeremysaenz.github.com/blog/2013/04/03/a-warm-welcome-from-the-code-gangsta/
-        </loc>
-        <lastmod>2013-04-03T19:22:31-07:00</lastmod>
+        <loc>http://codegangsta.io/blog/2013/04/03/a-warm-welcome-from-the-code-gangsta/</loc>
+        <lastmod>2013-04-04T08:30:28-07:00</lastmod>
     </url>
     <url>
-        <loc>http://jeremysaenz.github.com/blog/archives/</loc>
-        <lastmod>2013-04-03T19:22:31-07:00</lastmod>
+        <loc>http://codegangsta.io/blog/2013/04/04/dependency-injection-in-ruby/</loc>
+        <lastmod>2013-04-04T08:46:22-07:00</lastmod>
     </url>
     <url>
-        <loc>http://jeremysaenz.github.com/</loc>
-        <lastmod>2013-04-03T19:22:31-07:00</lastmod>
+        <loc>http://codegangsta.io/blog/archives/</loc>
+        <lastmod>2013-04-04T08:46:22-07:00</lastmod>
     </url>
     <url>
-        <loc>http://jeremysaenz.github.com/robots.txt</loc>
+        <loc>http://codegangsta.io/</loc>
+        <lastmod>2013-04-04T08:46:22-07:00</lastmod>
+    </url>
+    <url>
+        <loc>http://codegangsta.io/robots.txt</loc>
         <lastmod>2013-04-03T16:03:43-07:00</lastmod>
     </url>
 </urlset>

@@ -2,10 +2,10 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
 
   <title><![CDATA[Code Gangsta]]></title>
-  <link href="http://jeremysaenz.github.com/atom.xml" rel="self"/>
-  <link href="http://jeremysaenz.github.com/"/>
-  <updated>2013-04-03T19:23:59-07:00</updated>
-  <id>http://jeremysaenz.github.com/</id>
+  <link href="http://codegangsta.io/atom.xml" rel="self"/>
+  <link href="http://codegangsta.io/"/>
+  <updated>2013-04-04T08:53:05-07:00</updated>
+  <id>http://codegangsta.io/</id>
   <author>
     <name><![CDATA[Jeremy]]></name>
     
@@ -14,11 +14,267 @@
 
   
   <entry>
+    <title type="html"><![CDATA[Dependency Injection in Ruby]]></title>
+    <link href="http://codegangsta.io/blog/2013/04/04/dependency-injection-in-ruby/"/>
+    <updated>2013-04-04T08:26:00-07:00</updated>
+    <id>http://codegangsta.io/blog/2013/04/04/dependency-injection-in-ruby</id>
+    <content type="html"><![CDATA[<p>Dynamically typed languages like Ruby are an interesting beast when it comes to dependency injection. The topic itself has been debated in the Ruby community every once in a while:</p>
+
+<blockquote class="twitter-tweet"><p>Dependency injection is not a virtue in Ruby <a href="http://t.co/4w2qSCfo" title="http://bit.ly/ZtzSz9">bit.ly/ZtzSz9</a>, and then there&#8217;s the immediate criticism: <a href="http://t.co/Q1O9TvGm" title="http://bit.ly/ZtzQHw">bit.ly/ZtzQHw</a></p>&mdash; Nicola Iarocci (@nicolaiarocci) <a href="https://twitter.com/nicolaiarocci/status/288215967622914048">January 7, 2013</a></blockquote>
+
+
+<script async src="http://codegangsta.io//platform.twitter.com/widgets.js" charset="utf-8"></script>
+
+
+<p>Let me start off by first saying that dependency injection is not a catch-all for managing dependencies in Ruby. There are many other ways to abstract hard dependencies within your code. Today I want to specifically talk about programming to interfaces in Ruby and how to solve the “dependencies” problem in that space.</p>
+
+<h2>Programming to Interfaces</h2>
+
+<p>A common argument is that Ruby does not need dependency injection because Module mixins exist in the language. Module mixins surely allow implementation details to be abstracted and shared so that change can happen mostly in one place. A Ruby developer must think of the intensions of the Class/Implementation they are composing to correctly identify the solution to managing dependencies.</p>
+
+<h2>The Module Approach</h2>
+
+<p>Modules provide a clean solution to resolving dependencies, the basic premise looks like this:</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">module</span> <span class="nn">Downloadable</span>
+</span><span class='line'>  <span class="k">def</span> <span class="nf">download</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+</span><span class='line'>    <span class="c1"># download the url and location</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">SDK</span>
+</span><span class='line'>  <span class="kp">include</span> <span class="no">Downloadable</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="k">def</span> <span class="nf">install</span>
+</span><span class='line'>    <span class="n">download</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+</span><span class='line'>    <span class="o">.</span><span class="n">.</span><span class="o">.</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>This is a great example of how module mixins can be an excellent solution to our problem. <code>Downloadable</code> is completely reusable and can be safely mixed into any other class we want.</p>
+
+<h3>The Danger</h3>
+
+<p>The dangerous part about all of this is the <em>abuse</em> cases with mixins. When we type:</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="kp">include</span> <span class="no">Downloadable</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>We are essentially allowing the <code>Downloadable</code> module to add any number of methods it desires to our class. This pattern can easily veer codebases out of control if it is not monitored properly, so it is not quite a <em>silver bullet</em> for dependency resolution in Ruby.</p>
+
+<h2>The attr_inject Approach</h2>
+
+<p>Finding out the Modules was a solution to a particular problem and not an solution to the entire problem space encouraged me to go out an write a elegant and Rubyesque dependency injection framework. I call it <a href="https://github.com/jeremysaenz/attr_inject">attr_inject</a>.</p>
+
+<p>Before I go into details I want to spend a little time sharing what I think is a great explanation of the problem we are seeking to solve:</p>
+
+<blockquote><p>Using dependency injection to shape code relies on your ability to recognize that the responsibility for knowing the name of a class and the responsibility for knowing the name of a message to send to that class may belong in different objects. -Sandi Metz. Practical Object-Oriented Design in Ruby</p></blockquote>
+
+<p>I love this statement because it essentially says that when I explicitly want to inject something I have to stop thinking of the dependency as a class and start thinking of it as an interface. For instance:</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">User</span>
+</span><span class='line'>  <span class="k">def</span> <span class="nf">name</span>
+</span><span class='line'>    <span class="s2">&quot;foobar&quot;</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="k">def</span> <span class="nf">age</span>
+</span><span class='line'>    <span class="mi">22</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'>
+</span><span class='line'><span class="k">class</span> <span class="nc">Project</span>
+</span><span class='line'>  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
+</span><span class='line'>    <span class="vi">@user</span> <span class="o">=</span> <span class="n">user</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="k">def</span> <span class="nf">username</span>
+</span><span class='line'>    <span class="vi">@user</span><span class="o">.</span><span class="n">name</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>As far as <code>Project</code> is concerned, <code>@user</code> is an object that responds to the <code>name</code> message. This makes dependency injection shine when  used properly.</p>
+
+<h3>Flexible DI</h3>
+
+<p>In <em>Practical Object-Oriented Design in Ruby</em>, Sandi walks the reader through a real world example, progressively improving how dependencies are managed through injection. Here is a sample of the ultimate solution:</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+</span><span class='line'>  <span class="vi">@foo</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">fetch</span><span class="p">(</span><span class="ss">:foo</span><span class="p">,</span> <span class="mi">40</span><span class="p">)</span>
+</span><span class='line'>  <span class="vi">@bar</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">fetch</span><span class="p">(</span><span class="ss">:bar</span><span class="p">,</span> <span class="mi">18</span><span class="p">)</span>
+</span><span class='line'>  <span class="vi">@baz</span> <span class="o">=</span> <span class="n">args</span><span class="o">[</span><span class="ss">:baz</span><span class="o">]</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Injecting through the constructor with a hash provides immense flexibility and allows the class to not care about the Module or Class name of the dependency. It also solves the problem of <em>argument order dependencies</em>.</p>
+
+<h3>One Step Further</h3>
+
+<p>The <a href="https://github.com/jeremysaenz/attr_inject">attr_inject</a> gem takes this pattern one step further. Examine the code below:</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">def</span> <span class="nf">Project</span>
+</span><span class='line'>  <span class="n">attr_inject</span> <span class="ss">:user</span>
+</span><span class='line'>  <span class="n">attr_inject</span> <span class="ss">:sdk</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+</span><span class='line'>    <span class="n">inject_attributes</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>This snippet of code injects the <code>args</code> hash into the <code>Project</code>’s <code>user</code> and <code>sdk</code> attributes. If the <code>user</code> and <code>sdk</code> attributes do not exist, <code>inject_attributes</code> will throw an exception by default. This of course can be configured:</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">attr_inject</span> <span class="ss">:user</span><span class="p">,</span> <span class="ss">:required</span> <span class="o">=&gt;</span> <span class="kp">false</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>or</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">attr_inject</span> <span class="ss">:user</span><span class="p">,</span> <span class="n">default</span> <span class="o">=&gt;</span> <span class="n">some_default</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>Even Further&#8230;</h3>
+
+<p>If you are like me and you don’t always want to pass arguments into the object initializer or you want to inject dependencies whenever you want, you can use the <code>Injector</code> class.</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">Main</span>
+</span><span class='line'>  <span class="kp">include</span> <span class="no">Inject</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="k">def</span> <span class="nf">initialize</span><span class="p">()</span>
+</span><span class='line'>    <span class="n">injector</span> <span class="o">=</span> <span class="no">Injector</span><span class="o">.</span><span class="n">new</span>
+</span><span class='line'>    <span class="n">injector</span><span class="o">.</span><span class="n">map</span> <span class="ss">:user</span><span class="p">,</span> <span class="no">User</span><span class="o">.</span><span class="n">new</span>
+</span><span class='line'>    <span class="n">injector</span><span class="o">.</span><span class="n">map</span> <span class="ss">:sdk</span><span class="p">,</span> <span class="no">SDK</span><span class="o">.</span><span class="n">new</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">injector</span><span class="o">.</span><span class="n">apply</span> <span class="no">Project</span><span class="o">.</span><span class="n">new</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="k">class</span> <span class="nc">Project</span>
+</span><span class='line'>  <span class="n">attr_inject</span> <span class="ss">:user</span>
+</span><span class='line'>  <span class="n">attr_inject</span> <span class="ss">:sdk</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>Factories</h3>
+
+<p>Sometimes the dependency would like to know some information about the object it is injected into, or the dependency needs to be created specially for each injection. This is where factories come into play.</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">injector</span> <span class="o">=</span> <span class="no">Injector</span><span class="o">.</span><span class="n">new</span>
+</span><span class='line'><span class="n">injector</span><span class="o">.</span><span class="n">factory</span> <span class="ss">:logger</span> <span class="k">do</span> <span class="o">|</span><span class="n">target</span><span class="o">|</span>
+</span><span class='line'>  <span class="no">Logger</span><span class="o">.</span><span class="n">new</span> <span class="n">target</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Our logger object will be created upon every injection. You can request the logger object on your class the same way as any other dependency:</p>
+
+<figure class='code'> <div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">attr_inject</span> <span class="ss">:logger</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>Conclusion</h2>
+
+<p><a href="https://github.com/jeremysaenz/attr_inject">attr_inject</a> is an elegant and scalable way to manage dependencies. Documentation is a bit sparse at the moment and I hope to get a tutorial up and going very soon. Please feel free to fork it on Github an play around with it. Let me know what you think!</p>
+]]></content>
+  </entry>
+  
+  <entry>
     <title type="html"><![CDATA[A Warm Welcome from the Code Gangsta]]></title>
-    <link href="http://jeremysaenz.github.com/blog/2013/04/03/a-warm-welcome-from-the-code-gangsta/"/>
+    <link href="http://codegangsta.io/blog/2013/04/03/a-warm-welcome-from-the-code-gangsta/"/>
     <updated>2013-04-03T18:33:00-07:00</updated>
-    <id>http://jeremysaenz.github.com/blog/2013/04/03/a-warm-welcome-from-the-code-gangsta</id>
+    <id>http://codegangsta.io/blog/2013/04/03/a-warm-welcome-from-the-code-gangsta</id>
     <content type="html"><![CDATA[<p>The day finally has arrived. I am starting a blog.</p>
+
+<h2>Introduction</h2>
 
 <p>For those of you who do not know me, my name is Jeremy Saenz. I have been building software since graduating high school. Discovering that I did not want to attend college, I naturally picked up software engineering as a passionate craft that I care deeply about.</p>
 
@@ -29,12 +285,16 @@
 <iframe width="420" height="315" src="http://www.youtube.com/embed/k76KH-MxdAI" frameborder="0" allowfullscreen></iframe>
 
 
+<h2>The Flex Gangsta</h2>
+
 <p>The video instantly propelled me into the industry. In all humbleness and honesty it was a scary time for me. I was gracefully accepted into as a community member when I did not <em>really</em> know how to write code!</p>
 
 <p>With the help of some wonderful mentors I eventually <em>did</em> learn how to write code, and write it well. I began speaking at conferences and continued to produce rap songs and videos for the fun of it.</p>
 
 <iframe width="420" height="315" src="http://www.youtube.com/embed/DJ001Kgz5wc" frameborder="0" allowfullscreen></iframe>
 
+
+<h2>Recently&#8230;</h2>
 
 <p>The last couple years yielded an abundance of knowledge and experience, ranging from building key modules for a large social game to designing and implementing a full fledged driving game that is deployed/featured at auto shows across the country.</p>
 
