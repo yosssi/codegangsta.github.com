@@ -9,7 +9,8 @@
   <meta name="author" content="Jeremy">
 
   
-  <meta name="description" content=" Blog Archive Recent Posts ">
+  <meta name="description" content="Blog Archive 2013 A Warm Welcome from the Code Gangsta
+Apr 03 2013 Recent Posts A Warm Welcome from the Code Gangsta GitHub Repos Status updating &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -76,6 +77,19 @@
   
   <div id="blog-archives">
 
+
+
+  
+  <h2>2013</h2>
+
+<article>
+  
+<h1><a href="/blog/2013/04/03/a-warm-welcome-from-the-code-gangsta/">A Warm Welcome from the Code Gangsta</a></h1>
+<time datetime="2013-04-03T18:33:00-07:00" pubdate><span class='month'>Apr</span> <span class='day'>03</span> <span class='year'>2013</span></time>
+
+
+</article>
+
 </div>
 
   
@@ -89,7 +103,40 @@
   <h1>Recent Posts</h1>
   <ul id="recent_posts">
     
+      <li class="post">
+        <a href="/blog/2013/04/03/a-warm-welcome-from-the-code-gangsta/">A Warm Welcome from the Code Gangsta</a>
+      </li>
+    
   </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/jeremysaenz">@jeremysaenz</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'jeremysaenz',
+            count: 0,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
 </section>
 
 
