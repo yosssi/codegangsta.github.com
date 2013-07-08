@@ -9,7 +9,7 @@
   <meta name="author" content="Jeremy">
 
   
-  <meta name="description" content="Dynamically typed languages like Ruby are an interesting beast when it comes to dependency injection. The topic itself has been debated in the Ruby &hellip;">
+  <meta name="description" content="I have been playing with Go lately. The language itself has a lot going for it, one of which is a decent set of interop with existing C code. Today I &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -68,6 +68,255 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2013/07/08/c-bindings-in-go-a-practical-example/">C Bindings in Go: A Practical Example Part 1</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2013-07-08T06:40:00-07:00" pubdate data-updated="true">Jul 8<span>th</span>, 2013</time>
+        
+         | <a href="/blog/2013/07/08/c-bindings-in-go-a-practical-example/#disqus_thread">Comments</a>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>I have been playing with <a href="http://golang.org/">Go</a> lately. The language itself has a lot going for it, one of which is a decent set of interop with existing C code. Today I am going to walk you through a practical example of how this is done by showing some code that I have been working on lately with Go.</p>
+
+<h2>The Simplest Hello World</h2>
+
+<p>Assuming you have your <a href="http://golang.org/doc/code.html">Go development environment all set up,</a> go ahead and create a new go file with the following contents:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='go'><span class='line'><span class="kn">package</span> <span class="nx">main</span>
+</span><span class='line'>
+</span><span class='line'><span class="kd">func</span> <span class="nx">main</span><span class="p">()</span> <span class="p">{</span>
+</span><span class='line'>  <span class="nb">println</span><span class="p">(</span><span class="s">&quot;Hello world&quot;</span><span class="p">)</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Running this should obviously print &#8220;Hello world&#8221;. Let&#8217;s move on!</p>
+
+<h2>Using libspotify</h2>
+
+<p>Lets start creating some C bindings for libspotify! libspotify is a C api distributed by Spotify that basically allows us to do everything a typical spotify app can do; log in, play, music, manipulate playlists - all available to us with libspotify.</p>
+
+<p>For the sake of keeping this post short and to the point, we will just be creating a <code>sp_session</code> object. This session will lay some groundwork for us to log in and do the fun stuff libspotify allows us to do. Why don&#8217;t we dive in:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class='go'><span class='line'><span class="kn">package</span> <span class="nx">main</span>
+</span><span class='line'>
+</span><span class='line'><span class="kd">type</span> <span class="nx">Session</span> <span class="kd">struct</span> <span class="p">{</span>
+</span><span class='line'>  <span class="nx">session</span> <span class="o">*</span><span class="nx">C</span><span class="p">.</span><span class="nx">sp_session</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="kd">func</span> <span class="nx">main</span><span class="p">()</span> <span class="p">{</span>
+</span><span class='line'>  <span class="nb">println</span><span class="p">(</span><span class="s">&quot;Hello world&quot;</span><span class="p">)</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Running this will result in an error</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='text'><span class='line'>./bindings.go:4: undefined: C
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>This is because we actually need to use some special magic that Go provides for us, the C package.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+</pre></td><td class='code'><pre><code class='go'><span class='line'><span class="kn">package</span> <span class="nx">main</span>
+</span><span class='line'>
+</span><span class='line'><span class="kn">import</span> <span class="s">&quot;C&quot;</span>
+</span><span class='line'>
+</span><span class='line'><span class="kd">type</span> <span class="nx">Session</span> <span class="kd">struct</span> <span class="p">{</span>
+</span><span class='line'>  <span class="nx">session</span> <span class="o">*</span><span class="nx">C</span><span class="p">.</span><span class="nx">sp_session</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="kd">func</span> <span class="nx">main</span><span class="p">()</span> <span class="p">{</span>
+</span><span class='line'>  <span class="nb">println</span><span class="p">(</span><span class="s">&quot;Hello world&quot;</span><span class="p">)</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>This gives us a different error:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='text'><span class='line'>error: &#39;sp_session&#39; undeclared (first use in this function)
+</span><span class='line'>error: (Each undeclared identifier is reported only once
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Cool, so it sees the C package, but sp_session doesn&#8217;t exist. This is because we need to include libspotify using the <code>#include</code> directive for the C preprocessor. First make sure you have libspotify installed. On a Mac you can run <code>brew install libspotify</code>. Now try to run the following code:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+</pre></td><td class='code'><pre><code class='go'><span class='line'><span class="kn">package</span> <span class="nx">main</span>
+</span><span class='line'>
+</span><span class='line'><span class="cm">/*</span>
+</span><span class='line'><span class="cm">#include &lt;libspotify/api.h&gt;</span>
+</span><span class='line'><span class="cm">*/</span>
+</span><span class='line'><span class="kn">import</span> <span class="s">&quot;C&quot;</span>
+</span><span class='line'>
+</span><span class='line'><span class="kd">type</span> <span class="nx">Session</span> <span class="kd">struct</span> <span class="p">{</span>
+</span><span class='line'>  <span class="nx">session</span> <span class="o">*</span><span class="nx">C</span><span class="p">.</span><span class="nx">sp_session</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="kd">func</span> <span class="nx">main</span><span class="p">()</span> <span class="p">{</span>
+</span><span class='line'>  <span class="nb">println</span><span class="p">(</span><span class="s">&quot;Hello world&quot;</span><span class="p">)</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>This should compile and run since <code>sp_session</code> now resides in the global C namespace! This works great for things that exist in the header, but it breaks down when we try to initialize our session:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+</pre></td><td class='code'><pre><code class='go'><span class='line'><span class="kn">package</span> <span class="nx">main</span>
+</span><span class='line'>
+</span><span class='line'><span class="cm">/*</span>
+</span><span class='line'><span class="cm">#include &lt;libspotify/api.h&gt;</span>
+</span><span class='line'><span class="cm">*/</span>
+</span><span class='line'><span class="kn">import</span> <span class="s">&quot;C&quot;</span>
+</span><span class='line'><span class="kn">import</span> <span class="s">&quot;unsafe&quot;</span>
+</span><span class='line'>
+</span><span class='line'><span class="kd">type</span> <span class="nx">Session</span> <span class="kd">struct</span> <span class="p">{</span>
+</span><span class='line'>  <span class="nx">session</span> <span class="o">*</span><span class="nx">C</span><span class="p">.</span><span class="nx">sp_session</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="kd">func</span> <span class="nx">main</span><span class="p">()</span> <span class="p">{</span>
+</span><span class='line'>  <span class="nx">key</span> <span class="o">:=</span> <span class="s">&quot;appkey_good&quot;</span>
+</span><span class='line'>  <span class="nx">session</span> <span class="o">:=</span> <span class="nx">Session</span><span class="p">{}</span>
+</span><span class='line'>  <span class="nx">appkey</span> <span class="o">:=</span> <span class="nx">C</span><span class="p">.</span><span class="nx">CString</span><span class="p">(</span><span class="nx">key</span><span class="p">)</span>
+</span><span class='line'>  <span class="nx">appkey_size</span> <span class="o">:=</span> <span class="nb">len</span><span class="p">(</span><span class="nx">key</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="kd">var</span> <span class="nx">config</span> <span class="p">=</span> <span class="nx">C</span><span class="p">.</span><span class="nx">sp_session_config</span> <span class="p">{</span>
+</span><span class='line'>    <span class="nx">api_version</span><span class="p">:</span>          <span class="nx">C</span><span class="p">.</span><span class="nx">SPOTIFY_API_VERSION</span><span class="p">,</span>
+</span><span class='line'>    <span class="nx">cache_location</span><span class="p">:</span>       <span class="nx">C</span><span class="p">.</span><span class="nx">CString</span><span class="p">(</span><span class="s">&quot;.spotify/&quot;</span><span class="p">),</span>
+</span><span class='line'>    <span class="nx">settings_location</span><span class="p">:</span>    <span class="nx">C</span><span class="p">.</span><span class="nx">CString</span><span class="p">(</span><span class="s">&quot;.spotify/&quot;</span><span class="p">),</span>
+</span><span class='line'>    <span class="nx">user_agent</span><span class="p">:</span>           <span class="nx">C</span><span class="p">.</span><span class="nx">CString</span><span class="p">(</span><span class="s">&quot;spotify for go&quot;</span><span class="p">),</span>
+</span><span class='line'>    <span class="nx">application_key</span><span class="p">:</span>      <span class="nx">unsafe</span><span class="p">.</span><span class="nx">Pointer</span><span class="p">(</span><span class="nx">appkey</span><span class="p">),</span>
+</span><span class='line'>    <span class="nx">application_key_size</span><span class="p">:</span> <span class="nx">C</span><span class="p">.</span><span class="nx">size_t</span><span class="p">(</span><span class="nx">appkey_size</span><span class="p">)}</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="nx">C</span><span class="p">.</span><span class="nx">sp_session_create</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">config</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">session</span><span class="p">.</span><span class="nx">session</span><span class="p">)</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Will result in the following error:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='text'><span class='line'>Undefined symbols for architecture x86_64:
+</span><span class='line'>  &quot;_sp_session_create&quot;, referenced from:
+</span><span class='line'>      __cgo_90280c6a3021_Cfunc_sp_session_create in bindings.cgo2.o
+</span><span class='line'>     (maybe you meant: __cgo_90280c6a3021_Cfunc_sp_session_create)
+</span><span class='line'>ld: symbol(s) not found for architecture x86_64
+</span><span class='line'>collect2: ld returned 1 exit status
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>This is because we didn&#8217;t link libspotify. This is an easy fix, add this in the comment above <code>import "C"</code>:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='text'><span class='line'>#cgo LDFLAGS: -lspotify.12
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Your code should compile and link fine. You will get a SIGSEGV in your application, this is becuase we specified a bogus app key. We will cover this in detail during Part 2 of <em>C Bindings in Go: A Practical Example</em>.</p>
+
+<p>Until next time!</p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -433,6 +682,10 @@
     <section>
   <h1>Recent Posts</h1>
   <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2013/07/08/c-bindings-in-go-a-practical-example/">C Bindings in Go: A Practical Example Part 1</a>
+      </li>
     
       <li class="post">
         <a href="/blog/2013/04/04/dependency-injection-in-ruby/">Dependency Injection in Ruby</a>
