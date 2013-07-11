@@ -5,11 +5,11 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>Practical Go: C Bindings - Code Gangsta</title>
+  <title>Practical Go: Build Tags - Code Gangsta</title>
   <meta name="author" content="Jeremy">
 
   
-  <meta name="description" content="Practical Go: C Bindings Jul 8th, 2013 I have been playing with Go lately. The language itself has a lot going for it, one of which is a decent set &hellip;">
+  <meta name="description" content="Practical Go: Build Tags Jul 11th, 2013 In our last post we wrote a simple set of bindings for libspotify in Go. By the end of the post we had an &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -18,7 +18,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://codegangsta.io/blog/2013/07/08/c-bindings-in-go-a-practical-example">
+  <link rel="canonical" href="http://codegangsta.io/blog/2013/07/11/practical-go-build-tags">
   <link href="/favicon.png" rel="icon">
   <link href='http://fonts.googleapis.com/css?family=Quicksand:300,400' rel='stylesheet' type='text/css'>
   <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,300' rel='stylesheet' type='text/css'>
@@ -76,7 +76,7 @@
 
   <header>
   <div class="jumbotron">
-    Practical Go: C Bindings
+    Practical Go: Build Tags
 	<h5>
 
 
@@ -89,37 +89,16 @@
   
 
 
-<i class="icon-calendar-empty"></i> <time datetime="2013-07-08T06:40:00-07:00" pubdate data-updated="true">Jul 8<span>th</span>, 2013</time></h5>
+<i class="icon-calendar-empty"></i> <time datetime="2013-07-11T07:42:00-07:00" pubdate data-updated="true">Jul 11<span>th</span>, 2013</time></h5>
   </div>
 </header>
   <div class="row-fluid">
     <div class="span12">
-      <p>I have been playing with <a href="http://golang.org/">Go</a> lately. The language itself has a lot going for it, one of which is a decent set of interop with existing C code. Today I am going to walk you through a practical example of how this is done by showing some code that I have been working on lately with Go.</p>
+      <p>In our <a href="blog/2013/07/08/c-bindings-in-go-a-practical-example/">last post</a> we wrote a simple set of bindings for libspotify in Go. By the end of the post we had an example compiling, but we had a bad API key for our spotify application. One obvious way to recify this would be to grab an API key if you are a Spotfy Premium user. Another workaround is to use a <em>mock</em> library to make sure the code is working the way we want. We will link this mock library with <strong>Build tags.</strong></p>
 
-<h2>The Simplest Hello World</h2>
+<h2>Mocking Spotify</h2>
 
-<p>Assuming you have your <a href="http://golang.org/doc/code.html">Go development environment all set up,</a> go ahead and create a new go file with the following contents:</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-</pre></td><td class='code'><pre><code class='go'><span class='line'><span class="kn">package</span> <span class="nx">main</span>
-</span><span class='line'>
-</span><span class='line'><span class="kd">func</span> <span class="nx">main</span><span class="p">()</span> <span class="p">{</span>
-</span><span class='line'>  <span class="nb">println</span><span class="p">(</span><span class="s">&quot;Hello world&quot;</span><span class="p">)</span>
-</span><span class='line'><span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Running this should obviously print &#8220;Hello world&#8221;. Let&#8217;s move on!</p>
-
-<h2>Using libspotify</h2>
-
-<p>Lets start creating some C bindings for libspotify! libspotify is a C api distributed by Spotify that basically allows us to do everything a typical spotify app can do; log in, play, music, manipulate playlists - all available to us with libspotify.</p>
-
-<p>For the sake of keeping this post short and to the point, we will just be creating a <code>sp_session</code> object. This session will lay some groundwork for us to log in and do the fun stuff libspotify allows us to do. Why don&#8217;t we dive in:</p>
+<p>Start by installing libmockspotify:</p>
 
 <figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -127,98 +106,16 @@
 <span class='line-number'>4</span>
 <span class='line-number'>5</span>
 <span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-</pre></td><td class='code'><pre><code class='go'><span class='line'><span class="kn">package</span> <span class="nx">main</span>
-</span><span class='line'>
-</span><span class='line'><span class="kd">type</span> <span class="nx">Session</span> <span class="kd">struct</span> <span class="p">{</span>
-</span><span class='line'>  <span class="nx">session</span> <span class="o">*</span><span class="nx">C</span><span class="p">.</span><span class="nx">sp_session</span>
-</span><span class='line'><span class="p">}</span>
-</span><span class='line'>
-</span><span class='line'><span class="kd">func</span> <span class="nx">main</span><span class="p">()</span> <span class="p">{</span>
-</span><span class='line'>  <span class="nb">println</span><span class="p">(</span><span class="s">&quot;Hello world&quot;</span><span class="p">)</span>
-</span><span class='line'><span class="p">}</span>
+</pre></td><td class='code'><pre><code class='text'><span class='line'>git clone git@github.com:mopidy/libmockspotify.git
+</span><span class='line'>cd libmockspotify
+</span><span class='line'>./autogen.sh
+</span><span class='line'>./configure
+</span><span class='line'>make
+</span><span class='line'>sudo make install
 </span></code></pre></td></tr></table></div></figure>
 
 
-<p>Running this will result in an error</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='text'><span class='line'>./bindings.go:4: undefined: C
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>This is because we actually need to use some special magic that Go provides for us, the C package.</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-</pre></td><td class='code'><pre><code class='go'><span class='line'><span class="kn">package</span> <span class="nx">main</span>
-</span><span class='line'>
-</span><span class='line'><span class="kn">import</span> <span class="s">&quot;C&quot;</span>
-</span><span class='line'>
-</span><span class='line'><span class="kd">type</span> <span class="nx">Session</span> <span class="kd">struct</span> <span class="p">{</span>
-</span><span class='line'>  <span class="nx">session</span> <span class="o">*</span><span class="nx">C</span><span class="p">.</span><span class="nx">sp_session</span>
-</span><span class='line'><span class="p">}</span>
-</span><span class='line'>
-</span><span class='line'><span class="kd">func</span> <span class="nx">main</span><span class="p">()</span> <span class="p">{</span>
-</span><span class='line'>  <span class="nb">println</span><span class="p">(</span><span class="s">&quot;Hello world&quot;</span><span class="p">)</span>
-</span><span class='line'><span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>This gives us a different error:</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class='text'><span class='line'>error: &#39;sp_session&#39; undeclared (first use in this function)
-</span><span class='line'>error: (Each undeclared identifier is reported only once
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Cool, so it sees the C package, but sp_session doesn&#8217;t exist. This is because we need to include libspotify using the <code>#include</code> directive for the C preprocessor. First make sure you have libspotify installed. On a Mac you can run <code>brew install libspotify</code>. Now try to run the following code:</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-</pre></td><td class='code'><pre><code class='go'><span class='line'><span class="kn">package</span> <span class="nx">main</span>
-</span><span class='line'>
-</span><span class='line'><span class="cm">/*</span>
-</span><span class='line'><span class="cm">#include &lt;libspotify/api.h&gt;</span>
-</span><span class='line'><span class="cm">*/</span>
-</span><span class='line'><span class="kn">import</span> <span class="s">&quot;C&quot;</span>
-</span><span class='line'>
-</span><span class='line'><span class="kd">type</span> <span class="nx">Session</span> <span class="kd">struct</span> <span class="p">{</span>
-</span><span class='line'>  <span class="nx">session</span> <span class="o">*</span><span class="nx">C</span><span class="p">.</span><span class="nx">sp_session</span>
-</span><span class='line'><span class="p">}</span>
-</span><span class='line'>
-</span><span class='line'><span class="kd">func</span> <span class="nx">main</span><span class="p">()</span> <span class="p">{</span>
-</span><span class='line'>  <span class="nb">println</span><span class="p">(</span><span class="s">&quot;Hello world&quot;</span><span class="p">)</span>
-</span><span class='line'><span class="p">}</span>
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>This should compile and run since <code>sp_session</code> now resides in the global C namespace! This works great for things that exist in the header, but it breaks down when we try to initialize our session:</p>
+<p>Once libmockspotify is installed, we can link to that instead of the real libspotify:</p>
 
 <figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
@@ -248,21 +145,24 @@
 <span class='line-number'>26</span>
 <span class='line-number'>27</span>
 <span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
 </pre></td><td class='code'><pre><code class='go'><span class='line'><span class="kn">package</span> <span class="nx">main</span>
 </span><span class='line'>
 </span><span class='line'><span class="cm">/*</span>
 </span><span class='line'><span class="cm">#include &lt;libspotify/api.h&gt;</span>
+</span><span class='line'><span class="cm">#cgo LDFLAGS: -lmockspotify.2</span>
 </span><span class='line'><span class="cm">*/</span>
 </span><span class='line'><span class="kn">import</span> <span class="s">&quot;C&quot;</span>
 </span><span class='line'><span class="kn">import</span> <span class="s">&quot;unsafe&quot;</span>
 </span><span class='line'>
 </span><span class='line'><span class="kd">type</span> <span class="nx">Session</span> <span class="kd">struct</span> <span class="p">{</span>
-</span><span class='line'>  <span class="nx">session</span> <span class="o">*</span><span class="nx">C</span><span class="p">.</span><span class="nx">sp_session</span>
+</span><span class='line'><span class="nx">session</span> <span class="o">*</span><span class="nx">C</span><span class="p">.</span><span class="nx">sp_session</span>
 </span><span class='line'><span class="p">}</span>
 </span><span class='line'>
 </span><span class='line'><span class="kd">func</span> <span class="nx">main</span><span class="p">()</span> <span class="p">{</span>
-</span><span class='line'>  <span class="nx">key</span> <span class="o">:=</span> <span class="s">&quot;appkey_good&quot;</span>
-</span><span class='line'>  <span class="nx">session</span> <span class="o">:=</span> <span class="nx">Session</span><span class="p">{}</span>
+</span><span class='line'><span class="nx">key</span> <span class="o">:=</span> <span class="s">&quot;appkey_good&quot;</span>
+</span><span class='line'><span class="nx">session</span> <span class="o">:=</span> <span class="nx">Session</span><span class="p">{}</span>
 </span><span class='line'>  <span class="nx">appkey</span> <span class="o">:=</span> <span class="nx">C</span><span class="p">.</span><span class="nx">CString</span><span class="p">(</span><span class="nx">key</span><span class="p">)</span>
 </span><span class='line'>  <span class="nx">appkey_size</span> <span class="o">:=</span> <span class="nb">len</span><span class="p">(</span><span class="nx">key</span><span class="p">)</span>
 </span><span class='line'>
@@ -275,35 +175,69 @@
 </span><span class='line'>    <span class="nx">application_key_size</span><span class="p">:</span> <span class="nx">C</span><span class="p">.</span><span class="nx">size_t</span><span class="p">(</span><span class="nx">appkey_size</span><span class="p">)}</span>
 </span><span class='line'>
 </span><span class='line'>  <span class="nx">C</span><span class="p">.</span><span class="nx">sp_session_create</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">config</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">session</span><span class="p">.</span><span class="nx">session</span><span class="p">)</span>
+</span><span class='line'>  <span class="nb">println</span><span class="p">(</span><span class="s">&quot;Session created!&quot;</span><span class="p">)</span>
 </span><span class='line'><span class="p">}</span>
 </span></code></pre></td></tr></table></div></figure>
 
 
-<p>Will result in the following error:</p>
+<p>The following code should output:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='text'><span class='line'>Session created!
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>Using build tags</h2>
+
+<p>It&#8217;s great that we have libmockspotify for testing purposes, but it doesn&#8217;t make sense to always mock spotify in our project. This is where <strong>Build Tags</strong> come into play. We can use build tags to conditionally choose which library to link to.</p>
+
+<p>Let&#8217;s link both libspotify and libmockspotify in our file:</p>
 
 <figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
 <span class='line-number'>5</span>
-<span class='line-number'>6</span>
-</pre></td><td class='code'><pre><code class='text'><span class='line'>Undefined symbols for architecture x86_64:
-</span><span class='line'>  &quot;_sp_session_create&quot;, referenced from:
-</span><span class='line'>      __cgo_90280c6a3021_Cfunc_sp_session_create in bindings.cgo2.o
-</span><span class='line'>     (maybe you meant: __cgo_90280c6a3021_Cfunc_sp_session_create)
-</span><span class='line'>ld: symbol(s) not found for architecture x86_64
-</span><span class='line'>collect2: ld returned 1 exit status
+</pre></td><td class='code'><pre><code class='go'><span class='line'><span class="cm">/*</span>
+</span><span class='line'><span class="cm">#include &lt;libspotify/api.h&gt;</span>
+</span><span class='line'><span class="cm">#cgo LDFLAGS: -lmockspotify.2</span>
+</span><span class='line'><span class="cm">#cgo LDFLAGS: -lspotify.12</span>
+</span><span class='line'><span class="cm">*/</span>
 </span></code></pre></td></tr></table></div></figure>
 
 
-<p>This is because we didn&#8217;t link libspotify. This is an easy fix, add this in the comment above <code>import "C"</code>:</p>
+<p>This approach obviously will not work as is, so we will instead link each library conditionally based on the <em>mock</em> build take that we will define:</p>
 
 <figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='text'><span class='line'>#cgo LDFLAGS: -lspotify.12
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='go'><span class='line'><span class="cm">/*</span>
+</span><span class='line'><span class="cm">#include &lt;libspotify/api.h&gt;</span>
+</span><span class='line'><span class="cm">#cgo mock LDFLAGS: -lmockspotify.2</span>
+</span><span class='line'><span class="cm">#cgo !mock LDFLAGS: -lspotify.12</span>
+</span><span class='line'><span class="cm">*/</span>
 </span></code></pre></td></tr></table></div></figure>
 
 
-<p>Your code should compile and link fine. You will get a SIGSEGV in your application, this is becuase we specified a bogus app key. We will cover this in detail during Part 2 of <em>C Bindings in Go: A Practical Example</em>.</p>
+<p>This will link libmockspotify when the <em>mock</em> build tag is defined, otherwise we will use the real libspotify. So then how do we define build tags? Simple:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='text'><span class='line'>go run -tags mock myfile.go
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Thats enough for today, have fun with build tags! I will leave you with one more pro tip!</p>
+
+<p>In my <code>~/.vim</code> folder I have a ftplugin for Go that includes a binding for running tests:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='text'><span class='line'>nmap &lt;Leader&gt;t :!go test -tags test &lt;cr&gt;
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>You see that I includ the <em>test</em> tag in all of my test running? This makes it convenient when linking mock libraries specific for running tests!</p>
 
 <p>Until next time!</p>
 
@@ -323,6 +257,8 @@
         
 
 
+
+  <a href="/blog/categories/buildtags/"><span class="badge">buildtags</span></a>
 
   <a href="/blog/categories/cgo/"><span class="badge">cgo</span></a>
 
@@ -366,10 +302,8 @@
       <div class="span12">
         <p class="meta">
           
-            <a class="basic-alignment left" href="/blog/2013/04/04/dependency-injection-in-ruby/" title="Previous Post: Dependency Injection in Ruby">&laquo; Dependency Injection in Ruby</a>
+            <a class="basic-alignment left" href="/blog/2013/07/08/c-bindings-in-go-a-practical-example/" title="Previous Post: Practical Go: C Bindings">&laquo; Practical Go: C Bindings</a>
           
-          
-            <a class="basic-alignment right" href="/blog/2013/07/11/practical-go-build-tags/" title="Next Post: Practical Go: Build Tags">Practical Go: Build Tags &raquo;</a>
           
         </p>
       </div>
@@ -408,8 +342,8 @@
       
         
         // var disqus_developer = 1;
-        var disqus_identifier = 'http://codegangsta.io/blog/2013/07/08/c-bindings-in-go-a-practical-example/';
-        var disqus_url = 'http://codegangsta.io/blog/2013/07/08/c-bindings-in-go-a-practical-example/';
+        var disqus_identifier = 'http://codegangsta.io/blog/2013/07/11/practical-go-build-tags/';
+        var disqus_url = 'http://codegangsta.io/blog/2013/07/11/practical-go-build-tags/';
         var disqus_script = 'embed.js';
       
     (function () {

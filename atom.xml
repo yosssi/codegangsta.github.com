@@ -4,7 +4,7 @@
   <title><![CDATA[Code Gangsta]]></title>
   <link href="http://codegangsta.io/atom.xml" rel="self"/>
   <link href="http://codegangsta.io/"/>
-  <updated>2013-07-11T07:54:18-07:00</updated>
+  <updated>2013-07-11T08:58:07-07:00</updated>
   <id>http://codegangsta.io/</id>
   <author>
     <name><![CDATA[Jeremy]]></name>
@@ -12,6 +12,160 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Practical Go: Build Tags]]></title>
+    <link href="http://codegangsta.io/blog/2013/07/11/practical-go-build-tags/"/>
+    <updated>2013-07-11T07:42:00-07:00</updated>
+    <id>http://codegangsta.io/blog/2013/07/11/practical-go-build-tags</id>
+    <content type="html"><![CDATA[<p>In our <a href="blog/2013/07/08/c-bindings-in-go-a-practical-example/">last post</a> we wrote a simple set of bindings for libspotify in Go. By the end of the post we had an example compiling, but we had a bad API key for our spotify application. One obvious way to recify this would be to grab an API key if you are a Spotfy Premium user. Another workaround is to use a <em>mock</em> library to make sure the code is working the way we want. We will link this mock library with <strong>Build tags.</strong></p>
+
+<h2>Mocking Spotify</h2>
+
+<p>Start by installing libmockspotify:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='text'><span class='line'>git clone git@github.com:mopidy/libmockspotify.git
+</span><span class='line'>cd libmockspotify
+</span><span class='line'>./autogen.sh
+</span><span class='line'>./configure
+</span><span class='line'>make
+</span><span class='line'>sudo make install
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Once libmockspotify is installed, we can link to that instead of the real libspotify:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+</pre></td><td class='code'><pre><code class='go'><span class='line'><span class="kn">package</span> <span class="nx">main</span>
+</span><span class='line'>
+</span><span class='line'><span class="cm">/*</span>
+</span><span class='line'><span class="cm">#include &lt;libspotify/api.h&gt;</span>
+</span><span class='line'><span class="cm">#cgo LDFLAGS: -lmockspotify.2</span>
+</span><span class='line'><span class="cm">*/</span>
+</span><span class='line'><span class="kn">import</span> <span class="s">&quot;C&quot;</span>
+</span><span class='line'><span class="kn">import</span> <span class="s">&quot;unsafe&quot;</span>
+</span><span class='line'>
+</span><span class='line'><span class="kd">type</span> <span class="nx">Session</span> <span class="kd">struct</span> <span class="p">{</span>
+</span><span class='line'><span class="nx">session</span> <span class="o">*</span><span class="nx">C</span><span class="p">.</span><span class="nx">sp_session</span>
+</span><span class='line'><span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="kd">func</span> <span class="nx">main</span><span class="p">()</span> <span class="p">{</span>
+</span><span class='line'><span class="nx">key</span> <span class="o">:=</span> <span class="s">&quot;appkey_good&quot;</span>
+</span><span class='line'><span class="nx">session</span> <span class="o">:=</span> <span class="nx">Session</span><span class="p">{}</span>
+</span><span class='line'>  <span class="nx">appkey</span> <span class="o">:=</span> <span class="nx">C</span><span class="p">.</span><span class="nx">CString</span><span class="p">(</span><span class="nx">key</span><span class="p">)</span>
+</span><span class='line'>  <span class="nx">appkey_size</span> <span class="o">:=</span> <span class="nb">len</span><span class="p">(</span><span class="nx">key</span><span class="p">)</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="kd">var</span> <span class="nx">config</span> <span class="p">=</span> <span class="nx">C</span><span class="p">.</span><span class="nx">sp_session_config</span> <span class="p">{</span>
+</span><span class='line'>    <span class="nx">api_version</span><span class="p">:</span>          <span class="nx">C</span><span class="p">.</span><span class="nx">SPOTIFY_API_VERSION</span><span class="p">,</span>
+</span><span class='line'>    <span class="nx">cache_location</span><span class="p">:</span>       <span class="nx">C</span><span class="p">.</span><span class="nx">CString</span><span class="p">(</span><span class="s">&quot;.spotify/&quot;</span><span class="p">),</span>
+</span><span class='line'>    <span class="nx">settings_location</span><span class="p">:</span>    <span class="nx">C</span><span class="p">.</span><span class="nx">CString</span><span class="p">(</span><span class="s">&quot;.spotify/&quot;</span><span class="p">),</span>
+</span><span class='line'>    <span class="nx">user_agent</span><span class="p">:</span>           <span class="nx">C</span><span class="p">.</span><span class="nx">CString</span><span class="p">(</span><span class="s">&quot;spotify for go&quot;</span><span class="p">),</span>
+</span><span class='line'>    <span class="nx">application_key</span><span class="p">:</span>      <span class="nx">unsafe</span><span class="p">.</span><span class="nx">Pointer</span><span class="p">(</span><span class="nx">appkey</span><span class="p">),</span>
+</span><span class='line'>    <span class="nx">application_key_size</span><span class="p">:</span> <span class="nx">C</span><span class="p">.</span><span class="nx">size_t</span><span class="p">(</span><span class="nx">appkey_size</span><span class="p">)}</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="nx">C</span><span class="p">.</span><span class="nx">sp_session_create</span><span class="p">(</span><span class="o">&amp;</span><span class="nx">config</span><span class="p">,</span> <span class="o">&amp;</span><span class="nx">session</span><span class="p">.</span><span class="nx">session</span><span class="p">)</span>
+</span><span class='line'>  <span class="nb">println</span><span class="p">(</span><span class="s">&quot;Session created!&quot;</span><span class="p">)</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>The following code should output:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='text'><span class='line'>Session created!
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>Using build tags</h2>
+
+<p>It&#8217;s great that we have libmockspotify for testing purposes, but it doesn&#8217;t make sense to always mock spotify in our project. This is where <strong>Build Tags</strong> come into play. We can use build tags to conditionally choose which library to link to.</p>
+
+<p>Let&#8217;s link both libspotify and libmockspotify in our file:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='go'><span class='line'><span class="cm">/*</span>
+</span><span class='line'><span class="cm">#include &lt;libspotify/api.h&gt;</span>
+</span><span class='line'><span class="cm">#cgo LDFLAGS: -lmockspotify.2</span>
+</span><span class='line'><span class="cm">#cgo LDFLAGS: -lspotify.12</span>
+</span><span class='line'><span class="cm">*/</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>This approach obviously will not work as is, so we will instead link each library conditionally based on the <em>mock</em> build take that we will define:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='go'><span class='line'><span class="cm">/*</span>
+</span><span class='line'><span class="cm">#include &lt;libspotify/api.h&gt;</span>
+</span><span class='line'><span class="cm">#cgo mock LDFLAGS: -lmockspotify.2</span>
+</span><span class='line'><span class="cm">#cgo !mock LDFLAGS: -lspotify.12</span>
+</span><span class='line'><span class="cm">*/</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>This will link libmockspotify when the <em>mock</em> build tag is defined, otherwise we will use the real libspotify. So then how do we define build tags? Simple:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='text'><span class='line'>go run -tags mock myfile.go
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Thats enough for today, have fun with build tags! I will leave you with one more pro tip!</p>
+
+<p>In my <code>~/.vim</code> folder I have a ftplugin for Go that includes a binding for running tests:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='text'><span class='line'>nmap &lt;Leader&gt;t :!go test -tags test &lt;cr&gt;
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>You see that I includ the <em>test</em> tag in all of my test running? This makes it convenient when linking mock libraries specific for running tests!</p>
+
+<p>Until next time!</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Practical Go: C Bindings]]></title>

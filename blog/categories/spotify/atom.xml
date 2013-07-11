@@ -4,7 +4,7 @@
   <title><![CDATA[Category: spotify | Code Gangsta]]></title>
   <link href="http://codegangsta.io/blog/categories/spotify/atom.xml" rel="self"/>
   <link href="http://codegangsta.io/"/>
-  <updated>2013-07-11T07:54:18-07:00</updated>
+  <updated>2013-07-11T08:58:07-07:00</updated>
   <id>http://codegangsta.io/</id>
   <author>
     <name><![CDATA[Jeremy]]></name>
@@ -12,6 +12,119 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Practical Go: Build Tags]]></title>
+    <link href="http://codegangsta.io/blog/2013/07/11/practical-go-build-tags/"/>
+    <updated>2013-07-11T07:42:00-07:00</updated>
+    <id>http://codegangsta.io/blog/2013/07/11/practical-go-build-tags</id>
+    <content type="html"><![CDATA[<p>In our <a href="blog/2013/07/08/c-bindings-in-go-a-practical-example/">last post</a> we wrote a simple set of bindings for libspotify in Go. By the end of the post we had an example compiling, but we had a bad API key for our spotify application. One obvious way to recify this would be to grab an API key if you are a Spotfy Premium user. Another workaround is to use a <em>mock</em> library to make sure the code is working the way we want. We will link this mock library with <strong>Build tags.</strong></p>
+
+<h2>Mocking Spotify</h2>
+
+<p>Start by installing libmockspotify:
+<code>text
+git clone git@github.com:mopidy/libmockspotify.git
+cd libmockspotify
+./autogen.sh
+./configure
+make
+sudo make install
+</code></p>
+
+<p>Once libmockspotify is installed, we can link to that instead of the real libspotify:</p>
+
+<p>``` go
+package main</p>
+
+<p>/*</p>
+
+<h1>include &lt;libspotify/api.h></h1>
+
+<h1>cgo LDFLAGS: -lmockspotify.2</h1>
+
+<p>*/
+import "C"
+import "unsafe"</p>
+
+<p>type Session struct {
+session *C.sp_session
+}</p>
+
+<p>func main() {
+key := "appkey_good"
+session := Session{}
+  appkey := C.CString(key)
+  appkey_size := len(key)</p>
+
+<p>  var config = C.sp_session_config {</p>
+
+<pre><code>api_version:          C.SPOTIFY_API_VERSION,
+cache_location:       C.CString(".spotify/"),
+settings_location:    C.CString(".spotify/"),
+user_agent:           C.CString("spotify for go"),
+application_key:      unsafe.Pointer(appkey),
+application_key_size: C.size_t(appkey_size)}
+</code></pre>
+
+<p>  C.sp_session_create(&amp;config, &amp;session.session)
+  println("Session created!")
+}
+```</p>
+
+<p>The following code should output:
+<code>text
+Session created!
+</code></p>
+
+<h2>Using build tags</h2>
+
+<p>It's great that we have libmockspotify for testing purposes, but it doesn't make sense to always mock spotify in our project. This is where <strong>Build Tags</strong> come into play. We can use build tags to conditionally choose which library to link to.</p>
+
+<p>Let's link both libspotify and libmockspotify in our file:
+``` go
+/*</p>
+
+<h1>include &lt;libspotify/api.h></h1>
+
+<h1>cgo LDFLAGS: -lmockspotify.2</h1>
+
+<h1>cgo LDFLAGS: -lspotify.12</h1>
+
+<p>*/
+```</p>
+
+<p>This approach obviously will not work as is, so we will instead link each library conditionally based on the <em>mock</em> build take that we will define:
+``` go
+/*</p>
+
+<h1>include &lt;libspotify/api.h></h1>
+
+<h1>cgo mock LDFLAGS: -lmockspotify.2</h1>
+
+<h1>cgo !mock LDFLAGS: -lspotify.12</h1>
+
+<p>*/
+```</p>
+
+<p>This will link libmockspotify when the <em>mock</em> build tag is defined, otherwise we will use the real libspotify. So then how do we define build tags? Simple:</p>
+
+<p><code>text
+go run -tags mock myfile.go
+</code></p>
+
+<p>Thats enough for today, have fun with build tags! I will leave you with one more pro tip!</p>
+
+<p>In my <code>~/.vim</code> folder I have a ftplugin for Go that includes a binding for running tests:
+<code>text
+nmap &lt;Leader&gt;t :!go test -tags test &lt;cr&gt;
+</code></p>
+
+<p>You see that I includ the <em>test</em> tag in all of my test running? This makes it convenient when linking mock libraries specific for running tests!</p>
+
+<p>Until next time!</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[Practical Go: C Bindings]]></title>
