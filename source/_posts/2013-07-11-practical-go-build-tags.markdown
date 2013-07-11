@@ -93,6 +93,6 @@ In my `~/.vim` folder I have a ftplugin for Go that includes a binding for runni
 nmap <Leader>t :!go test -tags test <cr>
 ```
 
-You see that I includ the *test* tag in all of my test running? This makes it convenient when linking mock libraries specific for running tests!
+You see how I include the *test* tag in all of my test running? This makes it convenient when linking mock libraries specific for running tests!
 
 Until next time!
