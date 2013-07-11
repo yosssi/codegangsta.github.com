@@ -4,7 +4,7 @@
   <title><![CDATA[Category: buildtags | Code Gangsta]]></title>
   <link href="http://codegangsta.io/blog/categories/buildtags/atom.xml" rel="self"/>
   <link href="http://codegangsta.io/"/>
-  <updated>2013-07-11T08:58:07-07:00</updated>
+  <updated>2013-07-11T09:02:31-07:00</updated>
   <id>http://codegangsta.io/</id>
   <author>
     <name><![CDATA[Jeremy]]></name>
@@ -120,7 +120,7 @@ go run -tags mock myfile.go
 nmap &lt;Leader&gt;t :!go test -tags test &lt;cr&gt;
 </code></p>
 
-<p>You see that I includ the <em>test</em> tag in all of my test running? This makes it convenient when linking mock libraries specific for running tests!</p>
+<p>You see how I include the <em>test</em> tag in all of my test running? This makes it convenient when linking mock libraries specific for running tests!</p>
 
 <p>Until next time!</p>
 ]]></content>
