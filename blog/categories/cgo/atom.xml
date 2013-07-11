@@ -4,7 +4,7 @@
   <title><![CDATA[Category: cgo | Code Gangsta]]></title>
   <link href="http://codegangsta.io/blog/categories/cgo/atom.xml" rel="self"/>
   <link href="http://codegangsta.io/"/>
-  <updated>2013-07-08T07:48:40-07:00</updated>
+  <updated>2013-07-11T07:54:18-07:00</updated>
   <id>http://codegangsta.io/</id>
   <author>
     <name><![CDATA[Jeremy]]></name>
@@ -14,7 +14,7 @@
 
   
   <entry>
-    <title type="html"><![CDATA[C Bindings in Go: A Practical Example Part 1]]></title>
+    <title type="html"><![CDATA[Practical Go: C Bindings]]></title>
     <link href="http://codegangsta.io/blog/2013/07/08/c-bindings-in-go-a-practical-example/"/>
     <updated>2013-07-08T06:40:00-07:00</updated>
     <id>http://codegangsta.io/blog/2013/07/08/c-bindings-in-go-a-practical-example</id>
