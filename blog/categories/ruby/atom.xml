@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: ruby | Code Gangsta]]></title>
+  <link href="http://codegangsta.io/blog/categories/ruby/atom.xml" rel="self"/>
+  <link href="http://codegangsta.io/"/>
+  <updated>2013-07-21T15:19:15-07:00</updated>
+  <id>http://codegangsta.io/</id>
+  <author>
+    <name><![CDATA[Jeremy]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Creating CLI Applications in Go]]></title>
+    <link href="http://codegangsta.io/blog/2013/07/21/creating-cli-applications-in-go/"/>
+    <updated>2013-07-21T14:24:00-07:00</updated>
+    <id>http://codegangsta.io/blog/2013/07/21/creating-cli-applications-in-go</id>
+    <content type="html"><![CDATA[<p>For as long as I have been using it, my go-to language for creating CLI applications was Ruby. After all, Ruby is a robust, mature language with many things to make us developers want to gyrate with joy (okay maybe that is just me).</p>
+
+<p>To this day I still hold the opinion that Ruby provides the most elegant amount of expression when it comes to my everyday programming activities. Whether it is the language or the community that fosters clean code, I feel like an artisan every time I sit down to write an application or library in Ruby.</p>
+
+<p>There is something so elegant and beautiful about creating a command line application with the following code:</p>
+
+<p>``` ruby
+desc "A todo application"
+app :todo do
+  desc "add a todo"
+  command :add do</p>
+
+<pre><code>puts "Your todo has been added"
+</code></pre>
+
+<p>  end
+  desc "remove a todo"
+  command :remove do</p>
+
+<pre><code>puts "your todo has been removed"
+</code></pre>
+
+<p>  end
+end
+```</p>
+
+<h2>Distributing Ruby</h2>
+
+<p>While the code is beautiful, distributing Ruby programs is not. Now - I don't want to make you beleive that program distribution should be an easy thing, because it definitely is not. There are so many things that can possibly go wrong with an application when you expect it to leave your programming and test environments to run perfectly on your end users machines. Let me say it again; <em>Distributing programs is <strong>hard work!</strong></em></p>
+
+<p>I'm sure you are thinking, "Why not distribute your app via Rubygems?". After attempting the distribution of a command line application via Rubygems I came to the following conclusion: <strong>Any application not intended exculsively for Rubyists should not be distributed via Rubygems.</strong> Luckily <a href="http://mitchellh.com/abandoning-rubygems">I am not the only one</a> who holds this position on distribution, so that leads those of us that wish to use Ruby on a long road to properly distribute a command line application.</p>
+
+<h2>Custom Ruby and Vendoring</h2>
+
+<p>The next natural option with Ruby would be to distribute your entire application independent of RubyGems. So you <em>really</em> only have one good option here, and that is to <a href="http://yehudakatz.com/2012/06/05/tokaido-status-update-implementation-details/">compile a custom version of Ruby</a> to distribute with each OS installer (Yes, you must have an installer) of your application. Just so you don't mess with a users current installation you must compile under a custom prefix; something along the lines of <code>/usr/local/&lt;yourapp&gt;/ruby</code>.</p>
+
+<p>Once this is done it is important to make sure you vendor and distribute all of your gems that you use for your application. This can get nasty when it comes to native gems that rely on locaing dynamic libraries. Anyway, I hope you get the picture that <em>distributing a ruby app to end users can be a hassle.</em></p>
+
+<h2>Building it in Go</h2>
+
+<p>If you are adventurous you have probably played with, or heard of the <a href="http://golang.org/">Go programming language</a>. In fact I have started to blog about it for the past couple of weeks. My recent love affair with Go has led me to beleive that distributing applications to end users in Go is a much simpler process than languages like Ruby.</p>
+
+<p>Since Go is a compiled language, binaries of your app can be precompiled for each platform that you wish to distribute for. While not as portable as C, (and who can be, C compilers are everwhere!) Go provides a lightweight set of tools that can compile on many platforms for those who wish their end users to compile from source.</p>
+
+<h2>Introducing cli.go</h2>
+
+<p>While I loved the simplicity in distributing an application in Go, I missed that expressiveness that I got from Ruby, so (shameless plug) I rolled my own CLI library called <a href="https://github.com/codegangsta/cli">cli.go</a>.</p>
+
+<p><a href="https://github.com/codegangsta/cli">cli.go</a> provides that expressive, "Document as you code" model for building command line applications in Go. It is easily distributable and super fast! Building real command line apps is as easy as this:</p>
+
+<p>``` go
+package main</p>
+
+<p>import "os"
+import "github.com/codegangsta/cli"</p>
+
+<p>func main() {
+  app := cli.NewApp()
+  app.Name = "boom"
+  app.Usage = "make an explosive entrance"
+  app.Action = func(c *cli.Context) {</p>
+
+<pre><code>println("boom! I say!")
+</code></pre>
+
+<p>  }</p>
+
+<p>  app.Run(os.Args)
+}
+```</p>
+
+<p>Go check out the <a href="https://github.com/codegangsta/cli">cli.go</a> repo. <strong>Star</strong> it, <strong>fork</strong> it, <strong>Contribute</strong> to it. Let's make Go the go-to language for command line tools!</p>
+
+<p>Keep writing beautiful code.</p>
+]]></content>
+  </entry>
+  
+</feed>

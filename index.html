@@ -9,7 +9,7 @@
   <meta name="author" content="Jeremy">
 
   
-  <meta name="description" content="Code Gangsta Rants and raves from a certified G. Jul 11th, 2013 Comments buildtags cgo go golang libmockspotify libspotify practicalgo spotify &hellip;">
+  <meta name="description" content="Code Gangsta Rants and raves from a certified G. Jul 21st, 2013 Comments cli go golang ruby Creating CLI Applications in Go For as long as I have &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -80,6 +80,150 @@
 
 <div class="blog-index">
   
+  
+  
+    <article>
+      
+
+  <div class="row-fluid">
+    <div class="span2">
+		<h1 class="date-time">
+
+
+
+
+
+
+
+
+  
+
+
+<i class="icon-calendar-empty"></i> <time datetime="2013-07-21T14:24:00-07:00" pubdate data-updated="true">Jul 21<span>st</span>, 2013</time></h5>
+          <div class="row-fluid">
+          
+          <a href="http://codegangsta.io/blog/2013/07/21/creating-cli-applications-in-go/#disqus_thread">Comments </a> <span class="fui-bubble-16"></span>
+          
+          </div>
+          
+          <div class="row-fluid">
+          
+          <a href="/blog/categories/cli/"><span class="badge">cli</span></a>
+          
+          <a href="/blog/categories/go/"><span class="badge">go</span></a>
+          
+          <a href="/blog/categories/golang/"><span class="badge">golang</span></a>
+          
+          <a href="/blog/categories/ruby/"><span class="badge">ruby</span></a>
+          
+          </div>
+          
+    </div>
+    <div class="span10">
+      <h1 class="link"><a href="/blog/2013/07/21/creating-cli-applications-in-go/">Creating CLI Applications in Go</a></h1>
+      <p>For as long as I have been using it, my go-to language for creating CLI applications was Ruby. After all, Ruby is a robust, mature language with many things to make us developers want to gyrate with joy (okay maybe that is just me).</p>
+
+<p>To this day I still hold the opinion that Ruby provides the most elegant amount of expression when it comes to my everyday programming activities. Whether it is the language or the community that fosters clean code, I feel like an artisan every time I sit down to write an application or library in Ruby.</p>
+
+<p>There is something so elegant and beautiful about creating a command line application with the following code:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="n">desc</span> <span class="s2">&quot;A todo application&quot;</span>
+</span><span class='line'><span class="n">app</span> <span class="ss">:todo</span> <span class="k">do</span>
+</span><span class='line'>  <span class="n">desc</span> <span class="s2">&quot;add a todo&quot;</span>
+</span><span class='line'>  <span class="n">command</span> <span class="ss">:add</span> <span class="k">do</span>
+</span><span class='line'>    <span class="nb">puts</span> <span class="s2">&quot;Your todo has been added&quot;</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'>  <span class="n">desc</span> <span class="s2">&quot;remove a todo&quot;</span>
+</span><span class='line'>  <span class="n">command</span> <span class="ss">:remove</span> <span class="k">do</span>
+</span><span class='line'>    <span class="nb">puts</span> <span class="s2">&quot;your todo has been removed&quot;</span>
+</span><span class='line'>  <span class="k">end</span>
+</span><span class='line'><span class="k">end</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>Distributing Ruby</h2>
+
+<p>While the code is beautiful, distributing Ruby programs is not. Now - I don&#8217;t want to make you beleive that program distribution should be an easy thing, because it definitely is not. There are so many things that can possibly go wrong with an application when you expect it to leave your programming and test environments to run perfectly on your end users machines. Let me say it again; <em>Distributing programs is <strong>hard work!</strong></em></p>
+
+<p>I&#8217;m sure you are thinking, &#8220;Why not distribute your app via Rubygems?&#8221;. After attempting the distribution of a command line application via Rubygems I came to the following conclusion: <strong>Any application not intended exculsively for Rubyists should not be distributed via Rubygems.</strong> Luckily <a href="http://mitchellh.com/abandoning-rubygems">I am not the only one</a> who holds this position on distribution, so that leads those of us that wish to use Ruby on a long road to properly distribute a command line application.</p>
+
+<h2>Custom Ruby and Vendoring</h2>
+
+<p>The next natural option with Ruby would be to distribute your entire application independent of RubyGems. So you <em>really</em> only have one good option here, and that is to <a href="http://yehudakatz.com/2012/06/05/tokaido-status-update-implementation-details/">compile a custom version of Ruby</a> to distribute with each OS installer (Yes, you must have an installer) of your application. Just so you don&#8217;t mess with a users current installation you must compile under a custom prefix; something along the lines of <code>/usr/local/&lt;yourapp&gt;/ruby</code>.</p>
+
+<p>Once this is done it is important to make sure you vendor and distribute all of your gems that you use for your application. This can get nasty when it comes to native gems that rely on locaing dynamic libraries. Anyway, I hope you get the picture that <em>distributing a ruby app to end users can be a hassle.</em></p>
+
+<h2>Building it in Go</h2>
+
+<p>If you are adventurous you have probably played with, or heard of the <a href="http://golang.org/">Go programming language</a>. In fact I have started to blog about it for the past couple of weeks. My recent love affair with Go has led me to beleive that distributing applications to end users in Go is a much simpler process than languages like Ruby.</p>
+
+<p>Since Go is a compiled language, binaries of your app can be precompiled for each platform that you wish to distribute for. While not as portable as C, (and who can be, C compilers are everwhere!) Go provides a lightweight set of tools that can compile on many platforms for those who wish their end users to compile from source.</p>
+
+<h2>Introducing cli.go</h2>
+
+<p>While I loved the simplicity in distributing an application in Go, I missed that expressiveness that I got from Ruby, so (shameless plug) I rolled my own CLI library called <a href="https://github.com/codegangsta/cli">cli.go</a>.</p>
+
+<p><a href="https://github.com/codegangsta/cli">cli.go</a> provides that expressive, &#8220;Document as you code&#8221; model for building command line applications in Go. It is easily distributable and super fast! Building real command line apps is as easy as this:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+</pre></td><td class='code'><pre><code class='go'><span class='line'><span class="kn">package</span> <span class="nx">main</span>
+</span><span class='line'>
+</span><span class='line'><span class="kn">import</span> <span class="s">&quot;os&quot;</span>
+</span><span class='line'><span class="kn">import</span> <span class="s">&quot;github.com/codegangsta/cli&quot;</span>
+</span><span class='line'>
+</span><span class='line'><span class="kd">func</span> <span class="nx">main</span><span class="p">()</span> <span class="p">{</span>
+</span><span class='line'>  <span class="nx">app</span> <span class="o">:=</span> <span class="nx">cli</span><span class="p">.</span><span class="nx">NewApp</span><span class="p">()</span>
+</span><span class='line'>  <span class="nx">app</span><span class="p">.</span><span class="nx">Name</span> <span class="p">=</span> <span class="s">&quot;boom&quot;</span>
+</span><span class='line'>  <span class="nx">app</span><span class="p">.</span><span class="nx">Usage</span> <span class="p">=</span> <span class="s">&quot;make an explosive entrance&quot;</span>
+</span><span class='line'>  <span class="nx">app</span><span class="p">.</span><span class="nx">Action</span> <span class="p">=</span> <span class="kd">func</span><span class="p">(</span><span class="nx">c</span> <span class="o">*</span><span class="nx">cli</span><span class="p">.</span><span class="nx">Context</span><span class="p">)</span> <span class="p">{</span>
+</span><span class='line'>    <span class="nb">println</span><span class="p">(</span><span class="s">&quot;boom! I say!&quot;</span><span class="p">)</span>
+</span><span class='line'>  <span class="p">}</span>
+</span><span class='line'>
+</span><span class='line'>  <span class="nx">app</span><span class="p">.</span><span class="nx">Run</span><span class="p">(</span><span class="nx">os</span><span class="p">.</span><span class="nx">Args</span><span class="p">)</span>
+</span><span class='line'><span class="p">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Go check out the <a href="https://github.com/codegangsta/cli">cli.go</a> repo. <strong>Star</strong> it, <strong>fork</strong> it, <strong>Contribute</strong> to it. Let&#8217;s make Go the go-to language for command line tools!</p>
+
+<p>Keep writing beautiful code.</p>
+
+      
+      
+    </div>
+  </div>
+
+
+
+    </article>
+    
+    <hr>
+    
   
   
     <article>
