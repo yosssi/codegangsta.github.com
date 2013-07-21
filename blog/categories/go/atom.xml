@@ -4,7 +4,7 @@
   <title><![CDATA[Category: go | Code Gangsta]]></title>
   <link href="http://codegangsta.io/blog/categories/go/atom.xml" rel="self"/>
   <link href="http://codegangsta.io/"/>
-  <updated>2013-07-21T15:19:15-07:00</updated>
+  <updated>2013-07-21T15:22:17-07:00</updated>
   <id>http://codegangsta.io/</id>
   <author>
     <name><![CDATA[Jeremy]]></name>
@@ -14,7 +14,7 @@
 
   
   <entry>
-    <title type="html"><![CDATA[Creating CLI Applications in Go]]></title>
+    <title type="html"><![CDATA[On Distributing Command line Applications: Why I switched from Ruby to Go]]></title>
     <link href="http://codegangsta.io/blog/2013/07/21/creating-cli-applications-in-go/"/>
     <updated>2013-07-21T14:24:00-07:00</updated>
     <id>http://codegangsta.io/blog/2013/07/21/creating-cli-applications-in-go</id>
