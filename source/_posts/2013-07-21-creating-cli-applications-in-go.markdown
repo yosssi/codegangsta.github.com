@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Creating CLI Applications in Go"
+title: "On Distributing Command line Applications: Why I switched from Ruby to Go"
 date: 2013-07-21 14:24
 comments: true
 categories: go golang cli ruby
