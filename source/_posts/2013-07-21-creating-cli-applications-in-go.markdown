@@ -27,19 +27,19 @@ end
 ```
 
 ## Distributing Ruby
-While the code is beautiful, distributing Ruby programs is not. Now - I don't want to make you beleive that program distribution should be an easy thing, because it definitely is not. There are so many things that can possibly go wrong with an application when you expect it to leave your programming and test environments to run perfectly on your end users machines. Let me say it again; *Distributing programs is **hard work!***
+While the code is beautiful, distributing Ruby programs is not. Now - I don't want to make you believe that program distribution should be an easy thing, because it definitely is not. There are so many things that can possibly go wrong with an application when you expect it to leave your programming and test environments to run perfectly on your end users machines. Let me say it again; *Distributing programs is **hard work!***
 
-I'm sure you are thinking, "Why not distribute your app via Rubygems?". After attempting the distribution of a command line application via Rubygems I came to the following conclusion: **Any application not intended exculsively for Rubyists should not be distributed via Rubygems.** Luckily [I am not the only one](http://mitchellh.com/abandoning-rubygems) who holds this position on distribution, so that leads those of us that wish to use Ruby on a long road to properly distribute a command line application.
+I'm sure you are thinking, "Why not distribute your app via Rubygems?". After attempting the distribution of a command line application via Rubygems I came to the following conclusion: **Any application not intended exclusively for Rubyists should not be distributed via Rubygems.** Luckily [I am not the only one](http://mitchellh.com/abandoning-rubygems) who holds this position on distribution, so that leads those of us that wish to use Ruby on a long road to properly distribute a command line application.
 
 ## Custom Ruby and Vendoring
 The next natural option with Ruby would be to distribute your entire application independent of RubyGems. So you *really* only have one good option here, and that is to [compile a custom version of Ruby](http://yehudakatz.com/2012/06/05/tokaido-status-update-implementation-details/) to distribute with each OS installer (Yes, you must have an installer) of your application. Just so you don't mess with a users current installation you must compile under a custom prefix; something along the lines of `/usr/local/<yourapp>/ruby`. 
 
-Once this is done it is important to make sure you vendor and distribute all of your gems that you use for your application. This can get nasty when it comes to native gems that rely on locaing dynamic libraries. Anyway, I hope you get the picture that *distributing a ruby app to end users can be a hassle.*
+Once this is done it is important to make sure you vendor and distribute all of your gems that you use for your application. This can get nasty when it comes to native gems that rely on local dynamic libraries. Anyway, I hope you get the picture that *distributing a ruby app to end users can be a hassle.*
 
 ## Building it in Go
-If you are adventurous you have probably played with, or heard of the [Go programming language](http://golang.org/). In fact I have started to blog about it for the past couple of weeks. My recent love affair with Go has led me to beleive that distributing applications to end users in Go is a much simpler process than languages like Ruby.
+If you are adventurous you have probably played with, or heard of the [Go programming language](http://golang.org/). In fact I have started to blog about it for the past couple of weeks. My recent love affair with Go has led me to believe that distributing applications to end users in Go is a much simpler process than languages like Ruby.
 
-Since Go is a compiled language, binaries of your app can be precompiled for each platform that you wish to distribute for. While not as portable as C, (and who can be, C compilers are everwhere!) Go provides a lightweight set of tools that can compile on many platforms for those who wish their end users to compile from source.
+Since Go is a compiled language, binaries of your app can be precompiled for each platform that you wish to distribute for. While not as portable as C, (and who can be, C compilers are everywhere!) Go provides a lightweight set of tools that can compile on many platforms for those who wish their end users to compile from source.
 
 ## Introducing cli.go
 While I loved the simplicity in distributing an application in Go, I missed that expressiveness that I got from Ruby, so (shameless plug) I rolled my own CLI library called [cli.go](https://github.com/codegangsta/cli).  
