@@ -4,7 +4,7 @@
   <title><![CDATA[Category: golang | Code Gangsta]]></title>
   <link href="http://codegangsta.io/blog/categories/golang/atom.xml" rel="self"/>
   <link href="http://codegangsta.io/"/>
-  <updated>2013-07-22T07:38:04-07:00</updated>
+  <updated>2013-11-14T07:28:55-08:00</updated>
   <id>http://codegangsta.io/</id>
   <author>
     <name><![CDATA[Jeremy]]></name>
@@ -12,6 +12,50 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Announcing Martini: Classy Web Development in Go]]></title>
+    <link href="http://codegangsta.io/blog/2013/11/14/announcing-martini-classy-web-development-in-go/"/>
+    <updated>2013-11-14T07:13:00-08:00</updated>
+    <id>http://codegangsta.io/blog/2013/11/14/announcing-martini-classy-web-development-in-go</id>
+    <content type="html"><![CDATA[<p>Last night I tweeted about a web framework for Go called Martini.
+Martini has a non-intrusive design, and has awesome routing and middleware support.</p>
+
+<p><a href="http://martini.codegangsta.io/">http://martini.codegangsta.io/</a></p>
+
+<p>Below is a basic "Hello world!":</p>
+
+<p>``` go
+package main</p>
+
+<p>import "github.com/codegangsta/martini"</p>
+
+<p>func main() {
+  m := martini.Classic()</p>
+
+<p>  m.Get("/", func() string {</p>
+
+<pre><code>return "Hello world!"
+</code></pre>
+
+<p>  })</p>
+
+<p>  m.Run()</p>
+
+<p>}
+```</p>
+
+<p>So far the response has been fantastic, I am excited to see which ways the Golang community can come together to make something awesome:</p>
+
+<blockquote class="twitter-tweet"><p><a href="https://twitter.com/codegangsta">@codegangsta</a> damn! that is really impressive. This has to be the best lightweight <a href="https://twitter.com/search?q=%23golang&amp;src=hash">#golang</a> web framework yet! Kudos.</p>&mdash; Dave Cheney (@davecheney) <a href="https://twitter.com/davecheney/statuses/400941765076611072">November 14, 2013</a></blockquote>
+
+
+<script async src="http://codegangsta.io//platform.twitter.com/widgets.js" charset="utf-8"></script>
+
+
+<p>Go check it out, you won't regret it. <a href="https://github.com/codegangsta/martini">https://github.com/codegangsta/martini</a></p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[On Distributing Command line Applications: Why I switched from Ruby to Go]]></title>

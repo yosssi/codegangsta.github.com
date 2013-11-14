@@ -21,12 +21,18 @@
         <lastmod>2013-07-22T07:37:06-07:00</lastmod>
     </url>
     <url>
+        <loc>
+            http://codegangsta.io/blog/2013/11/14/announcing-martini-classy-web-development-in-go/
+        </loc>
+        <lastmod>2013-11-14T07:27:24-08:00</lastmod>
+    </url>
+    <url>
         <loc>http://codegangsta.io/blog/archives/</loc>
-        <lastmod>2013-07-22T07:37:06-07:00</lastmod>
+        <lastmod>2013-11-14T07:27:24-08:00</lastmod>
     </url>
     <url>
         <loc>http://codegangsta.io/</loc>
-        <lastmod>2013-07-22T07:37:06-07:00</lastmod>
+        <lastmod>2013-11-14T07:27:24-08:00</lastmod>
     </url>
     <url>
         <loc>http://codegangsta.io/robots.txt</loc>
