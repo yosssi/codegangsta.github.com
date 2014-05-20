@@ -14,7 +14,7 @@ I have been asked by many people what my thoughts are regarding the reasons not 
 
 >Arguably, many people at the time were young Go developers.
 
-This may be an obvious one. I was not expecting the positive attention that Martini received when I made the initial announcement. I was extremely surprised to see my little experiment of doing dependency injection in Go became popular so quickly. It was so well received that my inbox was flooded with emails for weeks, Martini blog posts were all over the internet, and hundreds of contributions were added to both the Martini and martini-contrib GitHub repos.
+This may be an obvious one. I was not expecting the positive attention that Martini received when I made the initial announcement. I was extremely surprised to see my little experiment of doing dependency injection in Go become popular so quickly. It was so well received that my inbox was flooded with emails for weeks, Martini blog posts were all over the internet, and hundreds of contributions were added to both the Martini and martini-contrib GitHub repos.
 
 Not only was this unexpected, I was still very young as a Go developer. Arguably, many people at the time were young Go developers. I doubted some of the decisions I made with Martini, but soon those doubts were drowned out by the positive reenforcement relayed by the Go community. In my mind Martini was a great fit for the Go community because people liked it! It's popular, so it must be the best choice right? It's completely idiomatic right? Right?!
 
@@ -86,6 +86,6 @@ func main() {
 
 [Negroni](http://negroni.codegangsta.io) is not considered a framework as it does not have a built in router. There are many great http routers already available to to the Go community already. The goal of Negroni is to be focused on the problem that Martini was originally set out to resolve.
 
-I'm interested in hearing your thoughts on the package, if you are interested in hearing more thoughts from me on the subject, feel free to comment below. Also, [be sure to give Negroni a star on GitHub](http://negroni.codegangsta.io) so we can create a vibrant community around reusable net/http handlers for Go!
+I'm interested in hearing your thoughts on the package, if you are interested in hearing more from me on the subject, feel free to comment below. Also, [be sure to give Negroni a star on GitHub](http://negroni.codegangsta.io) so we can create a vibrant community around reusable net/http handlers for Go!
 
 Keep on building awesome things.
